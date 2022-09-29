@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8" />
+
+	<link href="/css/reset.css" th:href="@{/css/reset.css}" rel="stylesheet" />
+	<link href="/css/style.css" th:href="@{/css/style.css}" rel="stylesheet" />
+	<script src="http://code.jquery.com/jquery-3.4.1.min.js"></script>
+	<html xmlns:th="http://www.thymeleaf.org">
+	<title>Wings</title>
+
+</head>
+
+<body>
+
+	<header th:insert="fragments/page_header::pageHeader"></header>
+
+	<main>
+
+		<div class="container cart">
+			<h2>カート</h2>
+			<div class="noData hidden">
+				<p class="info">カート情報はありません。</p>
+			</div>
+			<table class="cart" >
+
+				<thead>
+					<tr>
+						<th>選択</th>
+						<th>画像</th>
+						<th>商品名</th>
+						<th>価格(円)</th>
+						<th>個数</th>
+						<th>小計(円)</th>
+					</tr>
+				</thead>
+				<tbody>
+					<form method="post"  th:action="@{/wings/cart/delete}">
+						<tr th:each="cartdto:${cartDto}">
+							<td>
+								<input type="checkbox" name="id" class="che" th:value="${cartdto.id}" />
+							</td>
+							<td>
+								<img class="itemImage" th:src="${cartdto.imageFullPath}" />
+							</td>
+							<td th:text="${cartdto.productName}" />
+							<td th:text="${cartdto.price}" />
+							<td th:text="${cartdto.productCount}" />
+							<td th:text="${cartdto.productCount} * ${cartdto.price}" />
+						</tr>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td class="totalArea"></td>
+						<td class="totalArea"></td>
+						<td class="totalArea">合計(円)</td>
+						<td class="totalArea"></td>
+						<td class="totalArea" th:text="|${#aggregates.sum(cartDto.![productCount])}|" />
+						<td class="totalArea" th:text="|${#aggregates.sum(cartDto.![productCount * price])}|" />
+					</tr>
+				</tfoot>
+			</table>
+			<div class="buttonArea" >
+				<button type="submit" id="submit" class="deleteBtn" disable>削除</button>
+				<input type="button" class="buyBtn" value="購入" />
+			</div>
+			</form>
+		</div>
+	</main>
+	<script>
+		$(() => {
+			$('.buyBtn').on('click', buyCart)
+		})
+
+		function buyCart() {
+			if (isEmpty($('#hiddenUserName').val())) {
+				alert('ログインしてください。');
+				return;
+			}
+			location.replace(`/wings/settlement/`);
+		}
+
+		window.onload = function () {
+			if ($(".che").length == 0) {
+				$('.noData').removeClass('hidden');
+				$('.cart tr').remove();
+				$('.buttonArea').remove();
+			};
+
+		};
+
+		$(function () {
+			// 初期状態は無効
+			$("#submit").prop("disabled", true);
+			// チェックボックスの状態が変わったら
+			$("input[type='checkbox']").on('change', function () {
+				// チェックされているチェックボックスの数
+				if ($(".che:checked").length > 0) {
+					// ボタンを活性化
+					$("#submit").prop("disabled", false);
+				} else {
+					// ボタンを非活性化
+					$("#submit").prop("disabled", true);
+				}
+			});
+		});
+
+	</script>
+</body>
+
+</html>
